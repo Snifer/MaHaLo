@@ -119,11 +119,15 @@ class BurpExtender(IBurpExtender, ITab):
         for subdomain in data.get("subdomains", []):
             security_trails_subdomains.add(subdomain + "." + domain_name)
         
-        # Search subdomains using HackerTarget API
+        # Search subdomains using HackerTarget API  
         url = "https://api.hackertarget.com/hostsearch/?q=" + domain_name
         response_hackertarget = urllib2.urlopen(url)
-        hackertarget_data = response_hackertarget.read()
-        hackertarget_subdomains = hackertarget_data.strip().split("\n")
+        if response_hackertarget.getcode() == 200:
+            domain_list = response.read().split('\n')
+            for line in domain_list:
+                subdomain = line.split(',')
+                if len(subdomain) > 0:
+                    hackertarget_subdomains = subdomain[0]
 
         # Combine subdomains found
         subdomains = subdomains.union(security_trails_subdomains, hackertarget_subdomains)
